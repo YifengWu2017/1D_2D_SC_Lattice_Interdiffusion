@@ -1,8 +1,8 @@
 clear all; clc;
 
-MaxNumRun = 100;
-MaxNumRow = 103;
-MaxNumCol = 103;
+MaxNumRun = 100; %Maximum times of running - increasing value gets closer to equilibrium
+MaxNumRow = 103; %Maximum number of atoms for the row
+MaxNumCol = 103; %Maximum number of atoms for the column
 DistributionPattern = zeros(MaxNumRow, MaxNumCol);
 
 %All the possible jumping directions
@@ -32,35 +32,15 @@ while MaxNumRun ~= 0
         Atom_2 = DistributionPattern(PatternRow, PatternCol + 1);
         Atom_3 = DistributionPattern(PatternRow - 1, PatternCol);
         Atom_4 = DistributionPattern(PatternRow, PatternCol - 1);
-        AtomType = zeros(4, 1);
-    
-        if Atom_1 == 1
-            Number_A = Number_A + 1;
-            AtomType(1, 1) = 1;
-        else
-            Number_B = Number_B + 1;
-            AtomType(1, 1) = 0;
-        end
-        if Atom_2 == 1
-            Number_A = Number_A + 1;
-            AtomType(2, 1) = 1;
-        else
-            Number_B = Number_B + 1;
-            AtomType(2, 1) = 0;
-        end
-        if Atom_3 == 1
-            Number_A = Number_A + 1;
-            AtomType(3, 1) = 1;
-        else
-            Number_B = Number_B + 1;
-            AtomType(3, 1) = 0;
-        end
-        if Atom_4 == 1
-            Number_A = Number_A + 1;
-            AtomType(4, 1) = 1;
-        else
-            Number_B = Number_B + 1;
-            AtomType(4, 1) = 0;
+        AtomType = [Atom_1, Atom_2, Atom_3, Atom_4];
+        
+        %Determine # A and B within the 1st nearest-neighborhood
+        for item = 1 : 4
+            if AtomType(item) == 1
+                Number_A = Number_A + 1;
+            else
+                Number_B = Number_B + 1;
+            end
         end
     
         P1_A = Number_A / (Number_A + Number_B);
@@ -73,7 +53,8 @@ while MaxNumRun ~= 0
             P1_A = P1_A * P0_AB;
             P1_B = P1_B * P0_BB;
         end
-    
+        
+        %Final jumping probability to A and B
         P_A = P1_A / (P1_A + P1_B);
         P_B = P1_B / (P1_A + P1_B);
     
