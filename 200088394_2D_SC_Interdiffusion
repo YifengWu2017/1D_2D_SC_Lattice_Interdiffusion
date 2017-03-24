@@ -1,0 +1,106 @@
+clear all; clc;
+
+MaxNumRun = 100;
+MaxNumRow = 103;
+MaxNumCol = 103;
+DistributionPattern = zeros(MaxNumRow, MaxNumCol);
+
+%All the possible jumping directions
+JumpPattern = [1, 0; 0, 1; -1, 0; 0, -1];
+
+%Assign the initial distribution pattern
+for PatternRow = 1 : MaxNumRow
+    for PatternCol = 1 : MaxNumCol / 2
+        DistributionPattern(PatternRow, PatternCol) = 1;
+    end
+end
+
+%Atoms exchange line by line
+%Different probabilities for AA, AB, and BB pairs
+%Check surrounding atom type before jumping
+%The outermost atoms are treated as boundary
+P0_AA = 0.2;
+P0_AB = 0.3;
+P0_BB = 0.5;
+
+while MaxNumRun ~= 0
+    for PatternRow = 2 : MaxNumRow - 2
+        for PatternCol = 2 : MaxNumCol - 2
+        Number_A = 0;
+        Number_B = 0;
+        Atom_1 = DistributionPattern(PatternRow + 1, PatternCol);
+        Atom_2 = DistributionPattern(PatternRow, PatternCol + 1);
+        Atom_3 = DistributionPattern(PatternRow - 1, PatternCol);
+        Atom_4 = DistributionPattern(PatternRow, PatternCol - 1);
+        AtomType = zeros(4, 1);
+    
+        if Atom_1 == 1
+            Number_A = Number_A + 1;
+            AtomType(1, 1) = 1;
+        else
+            Number_B = Number_B + 1;
+            AtomType(1, 1) = 0;
+        end
+        if Atom_2 == 1
+            Number_A = Number_A + 1;
+            AtomType(2, 1) = 1;
+        else
+            Number_B = Number_B + 1;
+            AtomType(2, 1) = 0;
+        end
+        if Atom_3 == 1
+            Number_A = Number_A + 1;
+            AtomType(3, 1) = 1;
+        else
+            Number_B = Number_B + 1;
+            AtomType(3, 1) = 0;
+        end
+        if Atom_4 == 1
+            Number_A = Number_A + 1;
+            AtomType(4, 1) = 1;
+        else
+            Number_B = Number_B + 1;
+            AtomType(4, 1) = 0;
+        end
+    
+        P1_A = Number_A / (Number_A + Number_B);
+        P1_B = Number_B / (Number_A + Number_B);
+    
+        if DistributionPattern(PatternRow, PatternCol) == 1
+            P1_A = P1_A * P0_AA;
+            P1_B = P1_B * P0_AB;
+        else
+            P1_A = P1_A * P0_AB;
+            P1_B = P1_B * P0_BB;
+        end
+    
+        P_A = P1_A / (P1_A + P1_B);
+        P_B = P1_B / (P1_A + P1_B);
+    
+        CurrentPosition = [PatternRow, PatternCol];
+        DirectionDetector = rand(1, 1);
+        if DirectionDetector < P_A
+            JumpDirection = randi([1, 4], 1);
+            CurrentPosition = CurrentPosition + JumpPattern(JumpDirection, :);
+            while DistributionPattern(CurrentPosition(1), CurrentPosition(2)) ~= 1
+                CurrentPosition = [PatternRow, PatternCol];
+                JumpDirection = randi([1, 4], 1);
+                CurrentPosition = CurrentPosition + JumpPattern(JumpDirection, :);
+            end
+        else
+            JumpDirection = randi([1, 4], 1);
+            CurrentPosition = CurrentPosition + JumpPattern(JumpDirection, :);
+            while DistributionPattern(CurrentPosition(1), CurrentPosition(2)) ~= 0
+                CurrentPosition = [PatternRow, PatternCol];
+                JumpDirection = randi([1, 4], 1);
+                CurrentPosition = CurrentPosition + JumpPattern(JumpDirection, :);
+            end
+        end
+    
+        Temp = DistributionPattern(PatternRow, PatternCol);
+        DistributionPattern(PatternRow, PatternCol) = DistributionPattern(CurrentPosition(1), CurrentPosition(2));
+        DistributionPattern(CurrentPosition(1), CurrentPosition(2)) = Temp;
+        end
+    end
+    MaxNumRun = MaxNumRun - 1;
+end
