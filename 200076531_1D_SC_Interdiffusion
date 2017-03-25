@@ -1,0 +1,64 @@
+clear all; clc;
+format long
+M=30;% # of box %
+N=100;% # of atom in each box %
+k1=1;
+l=3;
+I=l*10000;% # of time scale %
+p0=1;
+p=0.3*p0;
+x=1:1:M;
+NA1=k1*N;% # of A in 1st box %
+% NnA=NA1:-NA1/(M-1):0;
+% NnA=N/2*ones(M);
+NnA=[NA1*ones(1,M/2) 0*ones(1,M/2)];
+% plot(x,NnA)
+NnA=round(NnA);
+NnB=N-NnA;
+
+% plot(x,NnA)
+xAt=[];
+i0=[1 l*10 l*100 l*1000 l*10000];
+j0=1;
+for i=1:I
+    n0=randperm(M-1);
+    for j=1:M-1
+        n=n0(j);
+        x1A=NnA(n)/N;
+        x1B=1-x1A;
+        x2A=NnA(n+1)/N;
+        x2B=1-x2A;
+        pAB=x1A*x2B*p;
+        pBA=x1B*x2A*p;
+        rd=rand;
+        if rd<=pAB
+            NnA(n)=NnA(n)-1;
+            NnB(n)=N-NnA(n);
+            NnA(n+1)=NnA(n+1)+1;
+            NnB(n+1)=N-NnA(n+1);
+        elseif rd>=1-pBA
+            NnB(n)=NnB(n)-1;
+            NnA(n)=N-NnB(n);
+            NnB(n+1)=NnB(n+1)+1;
+            NnA(n+1)=N-NnB(n+1);
+        end
+    end
+    xA=[];
+    for k=1:M
+        xAk=NnA(k)/N;
+        xA=[xA xAk];
+    end
+    xAt=[xAt xA'];
+    if i==i0(j0);
+        figure
+        plot(x, xA)
+        axis([1 M 0 1])
+        j0=j0+1;
+    end
+
+end
+t=1:1:I;
+x=1:1:M;
+figure
+surf(t,x,xAt(x,t))
+shading interp
